@@ -21,10 +21,10 @@ class PlotPainter extends CustomPainter {
   };
   final Map<DateTime, int> plotData;
 
+  final currentYear = DateTime.now().year;
   final currentMonth = DateTime.now().month;
 
   PlotPainter(this.plotData);
-
 
   String _formatPrice(String price) {
     final List<String> tmp = price.split('').reversed.toList();
@@ -49,10 +49,11 @@ class PlotPainter extends CustomPainter {
     return result;
   }
 
-  void _drawText(
-      String text, Canvas canvas, Size size, Offset offset, bool isPrice) {
-    final textStyle =
-        TextStyle(color: Color.fromRGBO(102, 102, 102, 1), fontSize: fontSize);
+  void _drawText(String text, Canvas canvas, Size size, Offset offset,
+      bool isPrice, bool currMonth) {
+    final textStyle = TextStyle(
+        color: (!currMonth) ? Color.fromRGBO(190, 190, 190, 1) : Colors.black,
+        fontSize: fontSize);
     final textSpan = TextSpan(
       text: !isPrice ? text : _formatPrice(text),
       style: textStyle,
@@ -109,25 +110,36 @@ class PlotPainter extends CustomPainter {
       ///x axis
       final x = xAxis[i];
       final description = months[descriptions[i].month];
-      _drawText(description, canvas, size, x, false);
+      _drawText(description, canvas, size, x, false, false);
 
       ///top line
       path.lineTo(lineCoordinates[i].dx, lineCoordinates[i].dy);
       filler.lineTo(lineCoordinates[i].dx, lineCoordinates[i].dy);
 
       ///description lines
-      canvas.drawLine(Offset(lineCoordinates[i].dx, lineCoordinates[i].dy - dy),
-          lineCoordinates[i], fillPaint);
+      canvas.drawLine(
+          Offset(lineCoordinates[i].dx, lineCoordinates[i].dy - dy * 0.65),
+          lineCoordinates[i],
+          fillPaint);
     }
     canvas.drawPath(path, linePaint);
 
     filler.lineTo(dx * itemCount, normalizedHeight + dy);
     canvas.drawPath(filler, fillPaint);
 
+    /// draw values above chart
     for (int i = 0; i < itemCount; i++) {
       ///description text
-      _drawText("${prices[i]} ₽", canvas, size,
-          Offset(lineCoordinates[i].dx, lineCoordinates[i].dy - dy), true);
+      final year = descriptions[i].year;
+      final month = descriptions[i].month;
+
+      _drawText(
+          "${prices[i]} ₽",
+          canvas,
+          size,
+          Offset(lineCoordinates[i].dx, lineCoordinates[i].dy - dy),
+          true,
+          month == currentMonth && year == currentYear);
     }
   }
 
